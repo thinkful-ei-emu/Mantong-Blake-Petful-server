@@ -1,14 +1,10 @@
 const {Queue, queuePeek, queueIsEmpty, display} = require('./queue.js');
-const bcrypt = require('bcrypt');
 const express = require('express');
 const petRouter = express.Router();
-
-
 
 const cats = new Queue;
 const dogs = new Queue;
 const users = new Queue;
-
 
 petRouter
   .route('/cat')
@@ -86,10 +82,23 @@ petRouter
   .route('/users/adopt')
   .post((req, res)=>{
     const { adopt} = req.body;
- 
+    
     if(!(adopt === 'dog' || adopt === 'cat' || adopt === 'both')){
       return res.status(400).json({message: 'adopt invalid word must be dog cat or both'});
     }
-
+    if(adopt==='dog'){
+      dogs.dequeue();
+      return res.status(200).json({messgae:'dog adopted'});
+    }
+    if(adopt==='cat'){
+      cats.dequeue();
+      return res.status(200).json({messgae:'cat adopted'});
+    }
+    if(adopt==='both'){
+      dogs.dequeue();
+      cats.dequeue();
+      return res.status(200).json({messgae:'both cat and dog adopted'});
+    }
+    
   });
 module.exports = {cats, dogs, petRouter};
