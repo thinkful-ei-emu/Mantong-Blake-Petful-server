@@ -55,9 +55,9 @@ petRouter
 petRouter
   .route('/users')
   .post((req, res)=>{
-    const {username, password} = req.body;
-    if(!username || !password){
-      return res.status(400).json({message: 'missing username or password'});
+    const {username} = req.body;
+    if(!username){
+      return res.status(400).json({message: 'missing username'});
     }
     let myUsers = display(users);
     for(let i = 0 ; i < myUsers.length; i++){
@@ -65,18 +65,7 @@ petRouter
         return res.status(205).json({message: 'username not unique'});
       }
     }
-    bcrypt.hash(password , 10 , (err, hash) =>{
-      if(err){
-        console.log(err);
-        return res.json(500).json('server error');
-      }
-      const user = {
-        username, 
-        password: hash,
-      };
-      users.enqueue(user);
-      return res.status(200).json({message: 'user created'});
-    });
+ 
   });
 
 petRouter
@@ -96,45 +85,11 @@ petRouter
 petRouter
   .route('/users/adopt')
   .post((req, res)=>{
-    const {password, adopt} = req.body;
-    if(!password){
-      return res.status(500).json({message: 'no password provided'});
-    }
+    const { adopt} = req.body;
+ 
     if(!(adopt === 'dog' || adopt === 'cat' || adopt === 'both')){
       return res.status(400).json({message: 'adopt invalid word must be dog cat or both'});
     }
-    bcrypt.compare(password , queuePeek(users).password, (err, result)=>{
-      if(err){
-        return res.status(401).json({
-          message: 'auth failed'
-        });
-      }
-      if (result === true){
-        if(!queueIsEmpty(dogs) && adopt === 'dog'){
-          users.dequeue();
-          dogs.dequeue();
-          return res.status(200).json({message : 'dog adopted'});
-        }
-        if(!queueIsEmpty(cats) && adopt === 'cat'){
-          users.dequeue();
-          cats.dequeue();
-          return res.status(200).json({message : 'cat adopted'});
-        }
-        if(!queueIsEmpty(cats) && !queueIsEmpty(dogs) && adopt === 'both'){
-          users.dequeue();
-          dogs.dequeue();
-          cats.dequeue();
-          return res.status(200).json({message : 'cat and dog adopted'});
-        }
-        return res.status(500).json({
-          message: 'missing requested animal(s)'
-        });
-      }
 
-      return res.status(401).json({
-        message: 'bad password'
-      });
-
-    });
   });
 module.exports = {cats, dogs, petRouter};
